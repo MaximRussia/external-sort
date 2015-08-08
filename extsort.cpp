@@ -28,8 +28,8 @@ struct chunk
 
 	bool pop_line( void )
 	{
-        return fgets( const_cast<char*>(line_.c_str()) /* OH! GUSH! SO NAUGHTY! */, LINE_MAX_SIZE, f_ );
-    }
+        	return fgets( const_cast<char*>(line_.c_str()) /* OH! GUSH! SO NAUGHTY! */, LINE_MAX_SIZE, f_ );
+    	}
 
 	FILE*	f_;
 	string	line_;
