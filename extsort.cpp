@@ -102,7 +102,7 @@ int main( int argc, char** argv )
 	}
 
     _p("done");
-
+ 
 	fclose( out );
 	fclose ( in );
 	delete []line;
