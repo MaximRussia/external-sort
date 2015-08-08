@@ -24,7 +24,7 @@ using namespace std;
 struct chunk
 {
 	chunk( FILE* f ) : f_( f ) { line_.resize(LINE_MAX_SIZE); }
-    ~chunk() {}
+	~chunk() {}
 
 	bool pop_line( void )
 	{
@@ -38,27 +38,27 @@ struct chunk
 int main( int argc, char** argv )
 {
 
-    assert(MAX_READ_COUT > 0); // so kek
+	assert(MAX_READ_COUT > 0); // so kek
 
 	FILE*	 in	= fopen( argv[ 1 ], "rb" );
 	char*	 line	= (char*) malloc( LINE_MAX_SIZE ); // memory buffer
-    unsigned read_count = MAX_READ_COUT;
+	unsigned read_count = MAX_READ_COUT;
 
 	vector<chunk>	chunks;
 	vector<string>	lines;
 
 	auto add_chunk = [&]()
 	{
-        //
-        // sort lines and write in chunk file
-        //
+		//
+        	// sort lines and write in chunk file
+        	//
 
 		std::sort( lines.begin(), lines.end(), [&]( const string& a, const string& b ) { return a < b; } );
 
 		string fname = "sort";
 		fname += to_string(chunks.size());
 
-        _p("add chunk " + fname)
+		_p("add chunk " + fname)
 
 		FILE* out = fopen( fname.c_str(), "wb+" );
 		chunks.push_back( out );
@@ -75,16 +75,16 @@ int main( int argc, char** argv )
 	while( fgets( line, LINE_MAX_SIZE, in ) )
 	{
 		lines.push_back( string(line) );
-        read_count--;
+		read_count--;
 
 		if( read_count <= 0)
 		{
 			add_chunk();
 			read_count = MAX_READ_COUT;
-        }
+        	}
 	}
 
-    // if after 'while' lines not empty, create one more chunk
+	// if after 'while' lines not empty, create one more chunk
 	if( !lines.empty() ) add_chunk();
 
 	_p("use " + to_string(chunks.size()) + " chunks");
@@ -101,7 +101,7 @@ int main( int argc, char** argv )
 			chunks.pop_back();
 	}
 
-    _p("done");
+	_p("done");
  
 	fclose( out );
 	fclose ( in );
