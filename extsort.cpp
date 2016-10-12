@@ -23,8 +23,8 @@ typedef unsigned long long int _uint64;
 _uint64 LINE_MAX_SIZE = 256;
 
 struct chunk {
-	chunk(FILE* f) :f (f) {
-	    line = new char[LINE_MAX_SIZE];
+	chunk(FILE* f) :f(f) {
+		line = new char[LINE_MAX_SIZE];
 	}
 	~chunk() {};
 
@@ -65,17 +65,17 @@ bool cmp_2(const chunk& a, const chunk& b) { return strcmp(a.line, b.line) > 0; 
 
 void write_chunk(FILE* _out) {
 	sort(lines.begin(), lines.end(), cmp_1);
-    for( _uint64 i = 0; i < lines.size(); ++i ) {
-        fwrite( lines[i].c_str(), strlen(lines[i].c_str()), 1, _out );
-    }
-    lines.clear();
+	for (_uint64 i = 0; i < lines.size(); ++i) {
+		fwrite(lines[i].c_str(), strlen(lines[i].c_str()), 1, _out);
+	}
+	lines.clear();
 }
 
 void add_chunk() {
 	string fname = "sort_" + next();
 	FILE* _out = fopen(fname.c_str(), "wb+");
 	write_chunk(_out);
-	fseek( _out, 0, SEEK_SET );
+	fseek(_out, 0, SEEK_SET);
 	chunks.push_back(chunk(_out));
 	files.push_back(fname);
 	chunks.back().pop_line();
@@ -85,10 +85,10 @@ void complete() {
 	fclose(out);
 	fclose(in);
 	delete[] line;
-	for( _uint64 i = 0; i < chunks.size(); ++i ) {
+	for (_uint64 i = 0; i < chunks.size(); ++i) {
 		chunks[i].fini();
 	}
-	for( _uint64 i = 0; i < files.size(); ++i ) {
+	for (_uint64 i = 0; i < files.size(); ++i) {
 		remove(files[i].c_str());
 	}
 	files.clear();
@@ -97,7 +97,7 @@ void complete() {
 }
 
 _uint64 fize_size(char* s) {
-    return ifstream(s, std::ifstream::ate | std::ifstream::binary).tellg();
+	return ifstream(s, std::ifstream::ate | std::ifstream::binary).tellg();
 }
 
 int main(int argc, char* argv[]) {
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 		char* buf = new char[BUF_SIZE];
 		delete[]buf;
 
-		_uint64 MAX_READ_COUT = ( BUF_SIZE / LINE_MAX_SIZE ) + 1;
+		_uint64 MAX_READ_COUT = (BUF_SIZE / LINE_MAX_SIZE) + 1;
 		_uint64 read_count = MAX_READ_COUT;
 
 		in = fopen(argv[1], "rb");
@@ -150,29 +150,53 @@ int main(int argc, char* argv[]) {
 		}
 
 		if (!lines.empty()) {
-            add_chunk();
+			add_chunk();
 		}
+
 
 		while (!chunks.empty()) {
 			sort(chunks.begin(), chunks.end(), cmp_2);
 			fwrite(chunks.back().line, strlen(chunks.back().line), 1, out);
 			if (!chunks.back().pop_line()) {
 				chunks.back().fini();
-                chunks.pop_back();
+				chunks.pop_back();
 			}
 		}
 
+		/*
+		read_count = MAX_READ_COUT;
+		while (!chunks.empty()) {
+			while (!chunks.empty() && read_count) {
+				for (_uint64 i = 0; i < chunks.size();) {
+					lines.push_back(string(chunks[i].line));
+					if (!chunks[i].pop_line()) {
+						chunks[i].fini();
+						chunks.erase(chunks.begin() + i);
+					}
+					else i++;
+
+					read_count--;
+				}
+			}
+
+			write_chunk(out);
+			read_count = MAX_READ_COUT;
+		}
+		*/
 		complete();
-	} catch (const char *ex) {
+	}
+	catch (const char *ex) {
 		cout << "RUNTIME    : " << ex << endl;
 		complete();
-	} catch (bad_alloc &ex) {
+	}
+	catch (bad_alloc &ex) {
 		cout << "ALLOCATOR  : " << ex.what() << endl;
 		complete();
-	} catch (exception &ex) {
+	}
+	catch (exception &ex) {
 		cout << "COMMON     : " << ex.what() << endl;
 		complete();
-	} 
+	}
 
 	return 0;
 }
