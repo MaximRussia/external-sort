@@ -121,10 +121,13 @@ _uint64 gen_mask_by_filters(filter &f) {
 void search(_uint64 &index, _uint64 limit, vector<user> &data, priority_queue<user> &result, vector<_uint64> &cached, filter &f) {
 	_uint64 mask = gen_mask_by_filters(f);
 	for (; index < cached.size(); index++) {
-		///if (cmp(cached[index], f.cached_query, mask)) {
-		if (cmp2(data[index], f.query, f)) {
-			result.push(data[index]);
-			if (result.size() == limit) break;
+        /// check for mask
+		if (cmp(cached[index], f.cached_query, mask)) {
+            /// check for fields (cut off false-positive result)
+            if (cmp2(data[index], f.query, f)) {
+                result.push(data[index]);
+                if (result.size() == limit) break;
+            }
 		}
 	}
 }
@@ -161,11 +164,11 @@ int main() {
 	srand(time(NULL));
 
 	filter f;
-	f.use_filter[e_id] = true;
+	//f.use_filter[e_id] = true;
 	f.use_filter[e_birthday] = true;
-	f.use_filter[e_gender] = true;
-	f.use_filter[e_city_id] = true;
-	f.use_filter[e_time_reg] = true;
+	//f.use_filter[e_gender] = true;
+	//f.use_filter[e_city_id] = true;
+	//f.use_filter[e_time_reg] = true;
 	f.query.id = 5000;
 	f.query.birthday = 25;
 	f.query.birthday = 25;
