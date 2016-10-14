@@ -15,13 +15,13 @@ typedef unsigned long long _uint64;
 
 template<typename T>
 string dec2bin(T n) {
-    size_t len = 8*sizeof(T);
-    string res;
-    while(len) {
-        res = (n&1 == 0 ? "0" : "1") + res;
-        len--;
-        n >>= 1;
-    }
+	size_t len = 8 * sizeof(T);
+	string res;
+	while (len) {
+		res = (n & 1 == 0 ? "0" : "1") + res;
+		len--;
+		n >>= 1;
+	}
 }
 
 #define BIN(n) { cout << decbin(n) << endl; }
@@ -121,13 +121,13 @@ _uint64 gen_mask_by_filters(filter &f) {
 void search(_uint64 &index, _uint64 limit, vector<user> &data, priority_queue<user> &result, vector<_uint64> &cached, filter &f) {
 	_uint64 mask = gen_mask_by_filters(f);
 	for (; index < cached.size(); index++) {
-        /// check for mask
+		/// check for mask
 		if (cmp(cached[index], f.cached_query, mask)) {
-            /// check for fields (cut off false-positive result)
-            if (cmp2(data[index], f.query, f)) {
-                result.push(data[index]);
-                if (result.size() == limit) break;
-            }
+			/// check for fields (cut off false-positive result)
+			if (cmp2(data[index], f.query, f)) {
+				result.push(data[index]);
+				if (result.size() == limit) break;
+			}
 		}
 	}
 }
