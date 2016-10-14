@@ -13,6 +13,19 @@ typedef unsigned long long _uint64;
 #define OFFSETOF(type, field)       ((_uint64) &(((type *) 0)->field))
 #define SIZEOF(type, field)         (sizeof(((type *) 0)->field))
 
+template<typename T>
+string dec2bin(T n) {
+    size_t len = 8*sizeof(T);
+    string res;
+    while(len) {
+        res = (n&1 == 0 ? "0" : "1") + res;
+        len--;
+        n >>= 1;
+    }
+}
+
+#define BIN(n) { cout << decbin(n) << endl; }
+
 struct user {
 	int id;
 	time_t birthday;
@@ -51,11 +64,16 @@ struct filter {
 
 _uint64 pack_user(user &u) {
 	_uint64 res = 0;
-	res |= u.id << (OFFSETOF(user, id) & 0xFF);
-	res |= u.birthday << (OFFSETOF(user, birthday) & 0xFF);
-	res |= u.gender << (OFFSETOF(user, gender) & 0xFF);
-	res |= u.city_id << (OFFSETOF(user, city_id) & 0xFF);
-	res |= u.time_reg << (OFFSETOF(user, time_reg) & 0xFF);
+	res |= u.id << OFFSETOF(user, id) + SIZEOF(user, id);
+	res |= u.birthday << OFFSETOF(user, birthday) + SIZEOF(user, birthday);
+	res |= u.gender << OFFSETOF(user, gender) + SIZEOF(user, gender);
+	res |= u.city_id << OFFSETOF(user, city_id) + SIZEOF(user, city_id);
+	res |= u.time_reg << OFFSETOF(user, time_reg) + SIZEOF(user, time_reg);
+	return res;
+}
+
+_uint64 pack_user2(user u) {
+	_uint64 res = *(_uint64*)(&u);
 	return res;
 }
 
@@ -103,7 +121,8 @@ _uint64 gen_mask_by_filters(filter &f) {
 void search(_uint64 &index, _uint64 limit, vector<user> &data, priority_queue<user> &result, vector<_uint64> &cached, filter &f) {
 	_uint64 mask = gen_mask_by_filters(f);
 	for (; index < cached.size(); index++) {
-		if (cmp(cached[index], f.cached_query, mask)) {
+		///if (cmp(cached[index], f.cached_query, mask)) {
+		if (cmp2(data[index], f.query, f)) {
 			result.push(data[index]);
 			if (result.size() == limit) break;
 		}
@@ -142,11 +161,18 @@ int main() {
 	srand(time(NULL));
 
 	filter f;
+	f.use_filter[e_id] = true;
 	f.use_filter[e_birthday] = true;
+	f.use_filter[e_gender] = true;
 	f.use_filter[e_city_id] = true;
+	f.use_filter[e_time_reg] = true;
+	f.query.id = 5000;
 	f.query.birthday = 25;
-	f.query.city_id = 256;
-	f.cached_query = pack_user(f.query);
+	f.query.birthday = 25;
+	f.query.gender = 25;
+	f.query.city_id = 25;
+	f.query.time_reg = 25;
+	f.cached_query = pack_user2(f.query);
 
 	priority_queue<user> result;
 	vector<user> data;
@@ -160,7 +186,7 @@ int main() {
 		u.city_id = rand() % 65535;
 		u.time_reg = rand() % 65535;
 		data.push_back(u);
-		cached.push_back(pack_user(u));
+		cached.push_back(pack_user2(u));
 	}
 
 	cout << "Searching...\n" << endl;
