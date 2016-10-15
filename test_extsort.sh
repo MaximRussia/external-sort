@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "testing ... "
-g++ -std=c++03 extsort.cpp
+g++ -std=c++03 -Ofast extsort.cpp
 
 echo "invalid args"
 ./a.exe

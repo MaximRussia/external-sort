@@ -159,7 +159,7 @@ _uint64 next() {
 	return n++;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 
 	srand(time(NULL));
 
@@ -181,7 +181,7 @@ int main() {
 	vector<user> data;
 	vector<_uint64> cached;
 
-	for (int i = 0; i < 10000000; i++) {
+	for (int i = 0; i < atoll(argv[1]); i++) {
 		user u;
 		u.id = next();
 		u.birthday = rand() % 365;
@@ -193,6 +193,6 @@ int main() {
 	}
 
 	cout << "Searching...\n" << endl;
-	search_wrapper(100, data, result, cached, f);
+	search_wrapper(atoll(argv[2]), data, result, cached, f);
 	return 0;
 }
