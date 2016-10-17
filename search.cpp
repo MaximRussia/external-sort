@@ -83,13 +83,35 @@ bool cmp(_uint64 u1_u, _uint64 u2_u, const _uint64 mask) {
 	return u1_masked == u2_masked;
 }
 
-bool cmp2(user &u1, user &u2, filter &f) {
-	return
-		(f.use_filter[e_id] && (u1.id == u2.id)) ||
-		(f.use_filter[e_birthday] && (u1.birthday == u2.birthday)) ||
-		(f.use_filter[e_gender] && (u1.gender == u2.gender)) ||
-		(f.use_filter[e_city_id] && (u1.city_id == u2.city_id)) ||
-		(f.use_filter[e_time_reg] && (u1.time_reg == u2.time_reg));
+bool cmp2(user &u1, user &query, filter &f) {
+	bool res = false;
+
+	if(f.use_filter[e_id]) {
+		res = u1.id == query.id;
+		if(!res) return false;
+	} 
+
+	if(f.use_filter[e_birthday]) {
+		res = u1.birthday == query.birthday;
+		if(!res) return false;
+	}
+
+	if(f.use_filter[e_gender]) {
+		res = u1.gender == query.gender;
+		if(!res) return false;
+	} 
+
+	if(f.use_filter[e_city_id]) {
+		res = u1.city_id == query.city_id;
+		if(!res) return false;
+	}
+
+	if(f.use_filter[e_time_reg]) {
+		res = u1.time_reg == query.time_reg;
+		if(!res) return false;
+	}
+
+	return res;
 }
 
 void fill_bits(_uint64 &mask, _uint64 from, _uint64 size) {
@@ -167,7 +189,7 @@ int main(int argc, char* argv[]) {
 	//f.use_filter[e_id] = true;
 	f.use_filter[e_birthday] = true;
 	//f.use_filter[e_gender] = true;
-	//f.use_filter[e_city_id] = true;
+	f.use_filter[e_city_id] = true;
 	//f.use_filter[e_time_reg] = true;
 	f.query.id = 5000;
 	f.query.birthday = 25;
@@ -186,7 +208,7 @@ int main(int argc, char* argv[]) {
 		u.id = next();
 		u.birthday = rand() % 365;
 		u.gender = rand() % 2;
-		u.city_id = rand() % 65535;
+		u.city_id = rand() % 75;
 		u.time_reg = rand() % 65535;
 		data.push_back(u);
 		cached.push_back(pack_user2(u));
