@@ -44,6 +44,8 @@ struct chunk {
 	FILE*	f;
 	char*	line;
 };
+bool cmp_1(const string& a, const string& b) { return a < b; }
+bool cmp_2(const chunk& a, const chunk& b) { return strcmp(a.line, b.line) > 0; }
 
 FILE*	 in = NULL;
 FILE*    out = NULL;
@@ -60,15 +62,20 @@ string next() {
 	return ss.str();
 }
 
-bool cmp_1(const string& a, const string& b) { return a < b; }
-bool cmp_2(const chunk& a, const chunk& b) { return strcmp(a.line, b.line) > 0; }
-
 void write_chunk(FILE* _out) {
 	sort(lines.begin(), lines.end(), cmp_1);
 	for (_uint64 i = 0; i < lines.size(); ++i) {
 		fwrite(lines[i].c_str(), strlen(lines[i].c_str()), 1, _out);
 	}
 	lines.clear();
+}
+
+void write_chunk(FILE* _out, priority_queue<string> &q) {
+
+    while(!q.empty()) {
+        string ch = q.top(); q.pop();
+        fwrite(ch.c_str(), strlen(ch.c_str()), 1, _out);
+    }
 }
 
 void add_chunk() {
@@ -154,6 +161,7 @@ int main(int argc, char* argv[]) {
 		}
 
 
+
 		while (!chunks.empty()) {
 			sort(chunks.begin(), chunks.end(), cmp_2);
 			fwrite(chunks.back().line, strlen(chunks.back().line), 1, out);
@@ -163,12 +171,13 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		/*
+    /*
+		priority_queue<string> q;
 		read_count = MAX_READ_COUT;
 		while (!chunks.empty()) {
 			while (!chunks.empty() && read_count) {
 				for (_uint64 i = 0; i < chunks.size();) {
-					lines.push_back(string(chunks[i].line));
+					q.push(string(chunks[i].line));
 					if (!chunks[i].pop_line()) {
 						chunks[i].fini();
 						chunks.erase(chunks.begin() + i);
@@ -179,10 +188,10 @@ int main(int argc, char* argv[]) {
 				}
 			}
 
-			write_chunk(out);
+			write_chunk(out, q);
 			read_count = MAX_READ_COUT;
 		}
-		*/
+    */
 		complete();
 	}
 	catch (const char *ex) {
