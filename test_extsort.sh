@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "testing ... "
-g++ -std=c++03 -Ofast extsort.cpp
+g++ -std=c++03 -Ofast -o a.exe extsort.cpp
 
 echo "invalid args"
 ./a.exe
@@ -35,11 +35,11 @@ custom_testing() {
 	time ./a.exe "$2" "$3" "$4"
 	head "$3"
 	tail "$3"
-	if [[ $(diff <(sort "$2") <(cat "$3") | head) ]]; then
-		echo "TEST FAILED !!!"
-	else
-		echo "TEST OK"
-	fi
+#	if [[ $(diff <(sort "$2") <(cat "$3") | head) ]]; then
+#		echo "TEST FAILED !!!"
+#	else
+#		echo "TEST OK"
+#	fi
 	echo "----------------"
 }
 
@@ -64,3 +64,5 @@ stress_testing() {
 #stress_testing 2000000000 600000000
 #stress_testing 5000000000 1000000000
 #stress_testing 10000000000 1000000000
+
+rm a.exe

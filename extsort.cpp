@@ -70,7 +70,9 @@ void write_chunk(FILE* _out) {
 	lines.clear();
 }
 
-void write_chunk(FILE* _out, priority_queue<string> &q) {
+typedef priority_queue< string, std::vector<string>, std::greater<string> > reverse_priority_queue;
+
+void write_chunk(FILE* _out, reverse_priority_queue &q) {
 
     while(!q.empty()) {
         string ch = q.top(); q.pop();
@@ -161,7 +163,7 @@ int main(int argc, char* argv[]) {
 		}
 
 
-
+	/*
 		while (!chunks.empty()) {
 			sort(chunks.begin(), chunks.end(), cmp_2);
 			fwrite(chunks.back().line, strlen(chunks.back().line), 1, out);
@@ -170,9 +172,9 @@ int main(int argc, char* argv[]) {
 				chunks.pop_back();
 			}
 		}
-
-    /*
-		priority_queue<string> q;
+	*/
+    
+		reverse_priority_queue q;
 		read_count = MAX_READ_COUT;
 		while (!chunks.empty()) {
 			while (!chunks.empty() && read_count) {
@@ -191,7 +193,7 @@ int main(int argc, char* argv[]) {
 			write_chunk(out, q);
 			read_count = MAX_READ_COUT;
 		}
-    */
+    
 		complete();
 	}
 	catch (const char *ex) {
