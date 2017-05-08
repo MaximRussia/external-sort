@@ -40,6 +40,7 @@ custom_testing() {
 #	else
 #		echo "TEST OK"
 #	fi
+	rm out.*.txt 
 	echo "----------------"
 }
 
@@ -55,7 +56,8 @@ stress_testing() {
 	time ./a.exe big.txt out.big.ext.txt "$2"
 	head out.big.ext.txt
 	tail out.big.ext.txt
-	rm out.*.txt big.txt
+	rm out.*.txt 
+	rm big.txt
 	echo "----------------"
 }
 
