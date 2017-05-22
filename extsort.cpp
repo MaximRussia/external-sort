@@ -37,12 +37,18 @@ struct chunk {
 		delete[]line;
 	}
 
+	bool valid() {
+		return val;
+	}
+
 	bool pop_line() {
-		return fgets(line, LINE_MAX_SIZE, f) != NULL;
+		val = fgets(line, LINE_MAX_SIZE, f) != NULL;
+		return val;
 	}
 
 	FILE*	f;
 	char*	line;
+	bool	val;
 };
 bool cmp_1(const string& a, const string& b) { return a < b; }
 bool cmp_2(const chunk& a, const chunk& b) { return strcmp(a.line, b.line) > 0; }
@@ -164,6 +170,7 @@ int main(int argc, char* argv[]) {
 
 
 	/*
+		// sort
 		while (!chunks.empty()) {
 			sort(chunks.begin(), chunks.end(), cmp_2);
 			fwrite(chunks.back().line, strlen(chunks.back().line), 1, out);
@@ -174,6 +181,8 @@ int main(int argc, char* argv[]) {
 		}
 	*/
     
+    /*
+    	// priority queue
 		reverse_priority_queue q;
 		read_count = MAX_READ_COUT;
 		while (!chunks.empty()) {
@@ -193,7 +202,27 @@ int main(int argc, char* argv[]) {
 			write_chunk(out, q);
 			read_count = MAX_READ_COUT;
 		}
-    
+    */
+
+	
+		// k way merge
+		while(!chunks.empty()) {
+			chunk &ch = chunks[0];
+			for(int i = 0; i < chunks.size(); i++) {
+				if(!chunks[i].valid()) {
+					chunks.erase(chunks.begin() + i);
+					continue;
+				}
+
+				if(cmp_2(ch, chunks[i]) && ch.valid() && chunks[i].valid()) {
+					ch = chunks[i];
+				}
+			}
+
+			fwrite(ch.line, strlen(ch.line), 1, out);
+			ch.pop_line();
+		}
+	
 		complete();
 	}
 	catch (const char *ex) {

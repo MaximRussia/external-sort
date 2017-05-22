@@ -34,12 +34,8 @@ custom_testing() {
 	echo "$1"
 	time ./a.exe "$2" "$3" "$4"
 	head "$3"
-	tail "$3"
-#	if [[ $(diff <(sort "$2") <(cat "$3") | head) ]]; then
-#		echo "TEST FAILED !!!"
-#	else
-#		echo "TEST OK"
-#	fi
+	echo "@"
+	sort "$2" | head 
 	rm out.*.txt 
 	echo "----------------"
 }
