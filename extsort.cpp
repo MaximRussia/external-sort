@@ -203,24 +203,22 @@ int main(int argc, char* argv[]) {
 			read_count = MAX_READ_COUT;
 		}
     */
-
 	
 		// k way merge
 		while(!chunks.empty()) {
-			chunk &ch = chunks[0];
+			size_t index = 0;
+			
 			for(int i = 0; i < chunks.size(); i++) {
-				if(!chunks[i].valid()) {
-					chunks.erase(chunks.begin() + i);
-					continue;
-				}
-
-				if(cmp_2(ch, chunks[i]) && ch.valid() && chunks[i].valid()) {
-					ch = chunks[i];
+				if(cmp_2(chunks[index], chunks[i])) {
+					index = i;
 				}
 			}
 
-			fwrite(ch.line, strlen(ch.line), 1, out);
-			ch.pop_line();
+			fwrite(chunks[index].line, strlen(chunks[index].line), 1, out);
+			
+			if(!chunks[index].pop_line()) {
+				chunks.erase(chunks.begin() + index);			
+			}
 		}
 	
 		complete();
