@@ -217,6 +217,7 @@ int main(int argc, char* argv[]) {
 			fwrite(chunks[index].line, strlen(chunks[index].line), 1, out);
 			
 			if(!chunks[index].pop_line()) {
+				chunks[index].fini();
 				chunks.erase(chunks.begin() + index);			
 			}
 		}
