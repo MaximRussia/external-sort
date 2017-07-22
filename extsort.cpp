@@ -1,3 +1,11 @@
+/*
+base64 /dev/urandom | head -c 1000000 > big.txt
+g++ -std=c++11 extsort.cpp && time ./a.out big.txt out.txt
+du big.txt out.txt
+wc big.txt out.txt
+wc out.txt big.txt && du out.txt big.txt
+g++ -std=c++11 extsort.cpp && time ./a.out big.txt out.txt && wc out.txt big.txt && du out.txt big.txt
+*/
 
 #include <iostream>
 #include <vector>
