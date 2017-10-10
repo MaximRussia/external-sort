@@ -84,16 +84,6 @@ void write_chunk(FILE* _out) {
 	lines.clear();
 }
 
-typedef priority_queue< string, std::vector<string>, std::greater<string> > reverse_priority_queue;
-
-void write_chunk(FILE* _out, reverse_priority_queue &q) {
-
-    while(!q.empty()) {
-        string ch = q.top(); q.pop();
-        fwrite(ch.c_str(), strlen(ch.c_str()), 1, _out);
-    }
-}
-
 void add_chunk() {
 	string fname = "sort_" + next();
 	FILE* _out = fopen(fname.c_str(), "wb+");
@@ -175,42 +165,6 @@ int main(int argc, char* argv[]) {
 		if (!lines.empty()) {
 			add_chunk();
 		}
-
-
-	/*
-		// sort
-		while (!chunks.empty()) {
-			sort(chunks.begin(), chunks.end(), cmp_2);
-			fwrite(chunks.back().line, strlen(chunks.back().line), 1, out);
-			if (!chunks.back().pop_line()) {
-				chunks.back().fini();
-				chunks.pop_back();
-			}
-		}
-	*/
-    
-    /*
-    	// priority queue
-		reverse_priority_queue q;
-		read_count = MAX_READ_COUT;
-		while (!chunks.empty()) {
-			while (!chunks.empty() && read_count) {
-				for (_uint64 i = 0; i < chunks.size();) {
-					q.push(string(chunks[i].line));
-					if (!chunks[i].pop_line()) {
-						chunks[i].fini();
-						chunks.erase(chunks.begin() + i);
-					}
-					else i++;
-
-					read_count--;
-				}
-			}
-
-			write_chunk(out, q);
-			read_count = MAX_READ_COUT;
-		}
-    */
 	
 		// k way merge
 		while(!chunks.empty()) {
