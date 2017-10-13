@@ -1,203 +1,134 @@
+#include <iostream>
+#include <string>
+#include <thread>
+#include <future>
+#include <algorithm>
+#include <utility>
+#include <fstream>
+#include <iterator>
+#include <sstream>
+#include <cassert>
+#include <ctime>
+#include <thread>
+#include <limits>
+#include <list>
+#include <queue>
+#include <set>
+#include <forward_list>
+#include <memory>
+#include <exception>
+using namespace std;
+
 /*
 base64 /dev/urandom | head -c 1000000 > big.txt
 g++ -std=c++11 extsort.cpp && time ./a.out big.txt out.txt
-du big.txt out.txt
-wc big.txt out.txt
-wc out.txt big.txt && du out.txt big.txt
-g++ -std=c++11 extsort.cpp && time ./a.out big.txt out.txt && wc out.txt big.txt && du out.txt big.txt
 */
 
-#include <iostream>
-#include <vector>
-#include <utility>
-#include <algorithm>
-#include <iterator>
-#include <map>
-#include <set>
-#include <queue>
-#include <stack>
-#include <cstring>
-#include <string>
-#include <cmath>
-#include <cstdlib>
-#include <cstdio>
-#include <fstream>
-#include <sstream>
-#include <memory>
-using namespace std;
+struct CHUNK {
+    string line;
+    string file;
+    ifstream ifs;
 
-typedef unsigned long long int _uint64;
+    string next() {
+        static size_t id = 0;
+        stringstream ss;
+        ss << id++;
+        return ss.str();
+    }
 
-_uint64 LINE_MAX_SIZE = 256;
+    CHUNK(vector<string> & data) {
+        file = next() + ".txt";
 
-struct chunk {
-	chunk(FILE* f) :f(f) {
-		line = new char[LINE_MAX_SIZE];
-	}
-	~chunk() {};
+        ofstream ofs(file, std::ios::binary);
+        ostream_iterator<string> osi(ofs, "\n");
+        copy(data.begin(), data.end(), osi);
+        ofs.close();
 
-	void fini() {
-		clean();
-		fclose(f);
-	}
+        ifs.open(file);
+    }
 
-	void clean() {
-		delete[]line;
-	}
+    ~CHUNK() {
+        ifs.close();
+        remove(file.c_str());
+    }
 
-	bool valid() {
-		return val;
-	}
+    bool pop() {
+        getline(ifs, line);
+        return !ifs.eof();
+    }
 
-	bool pop_line() {
-		val = fgets(line, LINE_MAX_SIZE, f) != NULL;
-		return val;
-	}
-
-	FILE*	f;
-	char*	line;
-	bool	val;
-};
-bool cmp_1(const string& a, const string& b) { return a < b; }
-bool cmp_2(const chunk& a, const chunk& b) { return strcmp(a.line, b.line) > 0; }
-
-FILE*	 in = NULL;
-FILE*    out = NULL;
-char*    line = NULL;
-
-vector<chunk>	chunks;
-vector<string>	lines;
-vector<string>  files;
-
-string next() {
-	static _uint64 num = 0;
-	stringstream ss;
-	ss << num++;
-	return ss.str();
-}
-
-void write_chunk(FILE* _out) {
-	sort(lines.begin(), lines.end(), cmp_1);
-	for (_uint64 i = 0; i < lines.size(); ++i) {
-		fwrite(lines[i].c_str(), strlen(lines[i].c_str()), 1, _out);
-	}
-	lines.clear();
-}
-
-void add_chunk() {
-	string fname = "sort_" + next();
-	FILE* _out = fopen(fname.c_str(), "wb+");
-	write_chunk(_out);
-	fseek(_out, 0, SEEK_SET);
-	chunks.push_back(chunk(_out));
-	files.push_back(fname);
-	chunks.back().pop_line();
+    string get() const {
+        return line;
+    }
 };
 
-void complete() {
-	fclose(out);
-	fclose(in);
-	delete[] line;
-	for (_uint64 i = 0; i < chunks.size(); ++i) {
-		chunks[i].fini();
-	}
-	for (_uint64 i = 0; i < files.size(); ++i) {
-		remove(files[i].c_str());
-	}
-	files.clear();
-	chunks.clear();
-	lines.clear();
-}
+struct SORTER {
+    string line;
+    vector<string> data;
+    list< shared_ptr<CHUNK> > chunks;
+    ifstream ifs;
+    ofstream ofs;
 
-_uint64 fize_size(char* s) {
-	return ifstream(s, std::ifstream::ate | std::ifstream::binary).tellg();
-}
+    size_t fize_size(string s) {
+        return ifstream(s, std::ifstream::ate | std::ifstream::binary).tellg();
+    }
 
-int main(int argc, char* argv[]) {
+    SORTER(string in, string out) {
+        ifs.open(in, ios::binary);
+        ofs.open(out, ios::binary);
 
-	try {
+        if(fize_size(in) == 0) throw runtime_error("empty file ....");
+		if (!ifs.good() || !ofs.good()) throw runtime_error("no files ....");
+    }
 
-		if (argc != 4) {
-			throw ("invalid args");
-		}
+    void run(long READ_NUM) {
 
-		_uint64 BUF_SIZE = atoll(argv[3]);
+        if(READ_NUM <= 0) throw runtime_error("bad args....");
 
-		// check allocation
-		char* buf = new char[BUF_SIZE];
-		delete[]buf;
+        while(!ifs.eof()) {
+            long read = READ_NUM;
+            while(read-- && !ifs.eof()) {
+                getline(ifs, line);
+                data.push_back(line);
+            }
 
-		_uint64 MAX_READ_COUT = (BUF_SIZE / LINE_MAX_SIZE) + 1;
-		_uint64 read_count = MAX_READ_COUT;
+            sort(data.begin(), data.end(), less<string>() );
+            chunks.push_back( make_shared<CHUNK>(data) );
+            chunks.back()->pop();
+            data.clear();
+        }
 
-		in = fopen(argv[1], "rb");
+        ifs.close();
 
-		if (!in) {
-			throw ("input file error");
-		}
+        while(!chunks.empty()) {
+            auto res = min_element(chunks.begin(), chunks.end(),
+                                   []( const shared_ptr<CHUNK> & ch1, const shared_ptr<CHUNK> & ch2)
+                                   {
+                                       return ch1->get() > ch2->get();
+                                   });
 
-		_uint64 fileSize = fize_size(argv[1]);
-		if (!fileSize) {
-			throw ("empty file error");
-		}
+            ofs << (*res)->get() << endl;
+            if(!(*res)->pop()) {
+                chunks.erase(res);
+            }
+        }
 
-		out = fopen(argv[2], "wb");
-		line = new char[LINE_MAX_SIZE];
+        ofs.close();
+    }
+};
 
-		if (fileSize <= BUF_SIZE) { // sort in memory, lucky!
-			while (fgets(line, LINE_MAX_SIZE, in) != NULL) {
-				lines.push_back(string(line));
-			}
-			write_chunk(out);
-			complete();
-			return 0;
-		}
+int main(int argc, char *argv[]) {
 
-		while (fgets(line, LINE_MAX_SIZE, in) != NULL) {
-			lines.push_back(string(line));
-			read_count--;
-			if (read_count <= 0) {
-				add_chunk();
-				read_count = MAX_READ_COUT;
-			}
-		}
+    try {
 
-		if (!lines.empty()) {
-			add_chunk();
-		}
-	
-		// k way merge
-		while(!chunks.empty()) {
-			size_t index = 0;
-			
-			for(int i = 0; i < chunks.size(); i++) {
-				if(cmp_2(chunks[index], chunks[i])) {
-					index = i;
-				}
-			}
+        if(argc != 4) throw runtime_error("invalid args");
 
-			fwrite(chunks[index].line, strlen(chunks[index].line), 1, out);
-			
-			if(!chunks[index].pop_line()) {
-				chunks[index].fini();
-				chunks.erase(chunks.begin() + index);			
-			}
-		}
-	
-		complete();
-	}
-	catch (const char *ex) {
-		cout << "RUNTIME    : " << ex << endl;
-		complete();
-	}
-	catch (bad_alloc &ex) {
-		cout << "ALLOCATOR  : " << ex.what() << endl;
-		complete();
-	}
-	catch (exception &ex) {
-		cout << "COMMON     : " << ex.what() << endl;
-		complete();
-	}
+        SORTER s(argv[1], argv[2]);
+        s.run(atol(argv[3]) / 128 /* LINE LEN */);
 
-	return 0;
+    } catch (exception &ex) {
+        cout << ex.what() << endl;
+    }
+
+    return 0;
 }
