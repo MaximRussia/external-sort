@@ -60,6 +60,12 @@ struct CHUNK {
     string get() const {
         return line;
     }
+
+private:
+	CHUNK(const CHUNK&);
+	CHUNK(const CHUNK&&);
+	CHUNK& operator =(const CHUNK&);
+	CHUNK& operator =(const CHUNK&&);
 };
 
 struct SORTER {
